@@ -1,0 +1,9 @@
+chatgpt.com
+chat.openai.com
+claude.ai
+gemini.google.com
+copilot.microsoft.com
+perplex.ai
+perplexity.ai
+midjourney.com
+poe.com
