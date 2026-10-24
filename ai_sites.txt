@@ -1,7 +1,9 @@
+stackoverflow.com/ai-assist
 chatgpt.com
 chat.openai.com
 openai.com
 arena.ai
+duck.ai
 www.google.com.ai
 api.openai.com
 claude.ai
@@ -267,6 +269,8 @@ kproxy.com
 uproxy.online
 filterbypass.me
 weboproxy.com
+www.bing.com
 chromewebstore.google.com
 drive.google.com
 drive.google.com/drive/home
+onedrive.live.com
