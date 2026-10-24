@@ -37,6 +37,7 @@ chat.deepseek.com
 api.deepseek.com
 meta.ai
 grok.x.ai
+grok.com
 x.ai
 mistral.ai
 chat.mistral.ai
@@ -140,6 +141,7 @@ facebook.com
 fb.com
 fbcdn.net
 messenger.com
+www.instagram.com
 instagram.com
 cdninstagram.com
 threads.net
@@ -185,6 +187,7 @@ teams.microsoft.com
 meet.google.com
 chat.google.com
 youtube.com
+www.youtube.com
 m.youtube.com
 music.youtube.com
 youtu.be
@@ -217,6 +220,7 @@ ubisoft.com
 riotgames.com
 leagueoflegends.com
 playvalorant.com
+www.kids.agame.com
 garena.com
 supercell.com
 itch.io
@@ -226,8 +230,11 @@ kongregate.com
 miniclip.com
 poki.com
 crazygames.com
+www.crazygames.com
 y8.com
+poki.com/id
 friv.com
+playhop.com
 armorgames.com
 addictinggames.com
 coolmathgames.com
@@ -260,3 +267,5 @@ uproxy.online
 filterbypass.me
 weboproxy.com
 chromewebstore.google.com
+drive.google.com
+drive.google.com/drive/home
