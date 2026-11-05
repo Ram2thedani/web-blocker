@@ -28,6 +28,11 @@ set "CHROME_PROFILE_VAL=BrowserAddPersonEnabled"
 set "CHROME_SIGNIN_VAL=BrowserSignin"
 set "CHROME_GUEST_VAL=BrowserGuestModeEnabled"
 
+:: Microsoft Edge Registry Keys
+set "EDGE_POLICY_KEY=HKLM\Software\Policies\Microsoft\Edge"
+set "EDGE_INPRIVATE_VAL=InPrivateModeAvailability"
+set "EDGE_PROFILE_VAL=BrowserAddProfileEnabled"
+
 :: VS Code User Settings Path
 set "VSCODE_SETTINGS=%APPDATA%\Code\User\settings.json"
 
@@ -51,7 +56,7 @@ echo ============================================
 echo Working Directory: %CD%
 echo Chrome AI Mode:    !CHROME_STATUS!
 echo --------------------------------------------
-echo 1. Block AI Sites + Chrome/VS Code/Extension Restrictions
+echo 1. Block AI Sites + Chrome/Edge/VS Code/Extension Restrictions
 echo 2. Unblock AI Sites + Restore Defaults
 echo 3. Exit
 echo ============================================
@@ -89,7 +94,7 @@ reg add "%CHROME_POLICY_KEY%\URLBlocklist" /v "1" /t REG_SZ /d "chrome://extensi
 reg add "%CHROME_POLICY_KEY%\URLBlocklist" /v "2" /t REG_SZ /d "google.com/ai" /f >nul
 reg add "%CHROME_POLICY_KEY%\URLBlocklist" /v "3" /t REG_SZ /d "google.com/search?udm=50" /f >nul
 
-:: Allowlist every extension currently installed in the Default profile so it keeps running
+:: Allowlist every extension currently installed in the Chrome Default profile
 reg delete "%CHROME_POLICY_KEY%\ExtensionInstallAllowlist" /f >nul 2>&1
 set /a EXT_N=0
 for /d %%P in ("%LOCALAPPDATA%\Google\Chrome\User Data\Default\Extensions\*") do (
@@ -98,13 +103,40 @@ for /d %%P in ("%LOCALAPPDATA%\Google\Chrome\User Data\Default\Extensions\*") do
         reg add "%CHROME_POLICY_KEY%\ExtensionInstallAllowlist" /v "!EXT_N!" /t REG_SZ /d "%%~nxP" /f >nul
     )
 )
-echo Allowlisted !EXT_N! installed extension(s).
+echo Allowlisted !EXT_N! installed Chrome extension(s).
+
+echo Applying Microsoft Edge restrictions (InPrivate, Profiles, Sign-in, Guest, Copilot)...
+reg add "%EDGE_POLICY_KEY%" /v %EDGE_INPRIVATE_VAL% /t REG_DWORD /d 1 /f >nul
+reg add "%EDGE_POLICY_KEY%" /v %EDGE_PROFILE_VAL% /t REG_DWORD /d 0 /f >nul
+reg add "%EDGE_POLICY_KEY%" /v %CHROME_SIGNIN_VAL% /t REG_DWORD /d 0 /f >nul
+reg add "%EDGE_POLICY_KEY%" /v %CHROME_GUEST_VAL% /t REG_DWORD /d 0 /f >nul
+reg add "%EDGE_POLICY_KEY%" /v "HubsSidebarEnabled" /t REG_DWORD /d 0 /f >nul
+reg add "%EDGE_POLICY_KEY%" /v "ComposeInlineEnabled" /t REG_DWORD /d 0 /f >nul
+
+echo Restricting Microsoft Edge Extensions (block new installs, keep current ones, lock edge://extensions)...
+reg add "%EDGE_POLICY_KEY%\ExtensionInstallBlocklist" /v "1" /t REG_SZ /d "*" /f >nul
+reg add "%EDGE_POLICY_KEY%\ExtensionInstallTypeBlocklist" /v "1" /t REG_SZ /d "development" /f >nul
+reg add "%EDGE_POLICY_KEY%" /v "BlockExternalExtensions" /t REG_DWORD /d 1 /f >nul
+reg add "%EDGE_POLICY_KEY%\URLBlocklist" /v "1" /t REG_SZ /d "edge://extensions" /f >nul
+reg add "%EDGE_POLICY_KEY%\URLBlocklist" /v "2" /t REG_SZ /d "google.com/ai" /f >nul
+reg add "%EDGE_POLICY_KEY%\URLBlocklist" /v "3" /t REG_SZ /d "google.com/search?udm=50" /f >nul
+
+:: Allowlist every extension currently installed in the Edge Default profile
+reg delete "%EDGE_POLICY_KEY%\ExtensionInstallAllowlist" /f >nul 2>&1
+set /a EDGE_EXT_N=0
+for /d %%P in ("%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Extensions\*") do (
+    if /i not "%%~nxP"=="Temp" (
+        set /a EDGE_EXT_N+=1
+        reg add "%EDGE_POLICY_KEY%\ExtensionInstallAllowlist" /v "!EDGE_EXT_N!" /t REG_SZ /d "%%~nxP" /f >nul
+    )
+)
+echo Allowlisted !EDGE_EXT_N! installed Edge extension(s).
 
 echo Disabling VS Code opening localhost links in built-in browser...
 call :TOGGLE_VSCODE_BROWSER block
 
 echo.
-echo [SUCCESS] AI sites blocked and restrictions applied.
+echo [SUCCESS] AI sites blocked and restrictions applied to Chrome and Edge.
 pause
 goto MENU
 
@@ -148,11 +180,39 @@ if !errorlevel! equ 0 reg delete "%CHROME_POLICY_KEY%" /v "BlockExternalExtensio
 reg query "%CHROME_POLICY_KEY%" /v "ExtensionSettings" >nul 2>&1
 if !errorlevel! equ 0 reg delete "%CHROME_POLICY_KEY%" /v "ExtensionSettings" /f >nul
 
+echo Restoring Microsoft Edge default settings...
+reg query "%EDGE_POLICY_KEY%" /v %EDGE_INPRIVATE_VAL% >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v %EDGE_INPRIVATE_VAL% /f >nul
+
+reg query "%EDGE_POLICY_KEY%" /v %EDGE_PROFILE_VAL% >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v %EDGE_PROFILE_VAL% /f >nul
+
+reg query "%EDGE_POLICY_KEY%" /v %CHROME_SIGNIN_VAL% >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v %CHROME_SIGNIN_VAL% /f >nul
+
+reg query "%EDGE_POLICY_KEY%" /v %CHROME_GUEST_VAL% >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v %CHROME_GUEST_VAL% /f >nul
+
+reg query "%EDGE_POLICY_KEY%" /v "HubsSidebarEnabled" >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v "HubsSidebarEnabled" /f >nul
+
+reg query "%EDGE_POLICY_KEY%" /v "ComposeInlineEnabled" >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v "ComposeInlineEnabled" /f >nul
+
+echo Restoring Microsoft Edge Extension policies...
+reg delete "%EDGE_POLICY_KEY%\ExtensionInstallBlocklist" /f >nul 2>&1
+reg delete "%EDGE_POLICY_KEY%\ExtensionInstallTypeBlocklist" /f >nul 2>&1
+reg delete "%EDGE_POLICY_KEY%\URLBlocklist" /f >nul 2>&1
+reg delete "%EDGE_POLICY_KEY%\ExtensionInstallAllowlist" /f >nul 2>&1
+
+reg query "%EDGE_POLICY_KEY%" /v "BlockExternalExtensions" >nul 2>&1
+if !errorlevel! equ 0 reg delete "%EDGE_POLICY_KEY%" /v "BlockExternalExtensions" /f >nul
+
 echo Restoring VS Code localhost link settings...
 call :TOGGLE_VSCODE_BROWSER unblock
 
 echo.
-echo [SUCCESS] AI sites unblocked and settings restored.
+echo [SUCCESS] AI sites unblocked and settings restored for Chrome and Edge.
 pause
 goto MENU
 
