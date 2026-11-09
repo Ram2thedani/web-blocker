@@ -274,3 +274,4 @@ chromewebstore.google.com
 drive.google.com
 drive.google.com/drive/home
 onedrive.live.com
+search.brave.com
